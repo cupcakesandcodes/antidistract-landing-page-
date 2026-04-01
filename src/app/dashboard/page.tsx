@@ -14,10 +14,13 @@ export default function DashboardPage() {
     useEffect(() => {
         // ── OAuth Token Capture ──
         const hash = window.location.hash;
-        if (hash && hash.includes('token=')) {
-            const token = hash.split('token=')[1];
-            localStorage.setItem('fg_token', token);
-            window.history.replaceState(null, '', window.location.pathname);
+        if (hash) {
+            const params = new URLSearchParams(hash.replace('#', '?'));
+            const token = params.get('access_token') || params.get('token');
+            if (token) {
+                localStorage.setItem('fg_token', token);
+                window.history.replaceState(null, '', window.location.pathname);
+            }
         }
 
         const token = localStorage.getItem('fg_token');
