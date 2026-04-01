@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-
-const API_BASE = 'http://127.0.0.1:3000/api';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -17,19 +16,13 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const response = await fetch(`${API_BASE}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             
-            const data = await response.json();
-            
-            if (response.ok) {
-                localStorage.setItem('fg_token', data.token);
+            if (error) {
+                setError(error.message || 'Login failed. Please check your credentials.');
+            } else if (data.session) {
+                localStorage.setItem('fg_token', data.session.access_token);
                 window.location.href = '/dashboard';
-            } else {
-                setError(data.error || 'Login failed. Please check your credentials.');
             }
         } catch (err) {
             setError('Connection error. Is the backend running?');
@@ -40,10 +33,14 @@ export default function LoginPage() {
 
     const handleGoogleLogin = async () => {
         try {
-            const response = await fetch(`${API_BASE}/auth/google`);
-            const data = await response.json();
-            if (data.url) {
-                window.location.href = data.url;
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/dashboard`
+                }
+            });
+            if (error) {
+                setError(error.message);
             }
         } catch (err) {
             setError('Could not initiate Google login');

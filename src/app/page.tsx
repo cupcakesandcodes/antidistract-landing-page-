@@ -5,12 +5,17 @@ import Link from 'next/link';
 
 export default function LandingPage() {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [token, setToken] = useState<string | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
         };
         window.addEventListener('scroll', handleScroll);
+        
+        // Client-side execution only
+        setToken(localStorage.getItem('fg_token'));
+        
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -25,10 +30,15 @@ export default function LandingPage() {
                     </Link>
                     <ul className="nav-links">
                         <li><a href="#features">Features</a></li>
-                        <li><a href="#how-it-works">How it works</a></li>
+                        <li><a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('dashboard-preview')?.scrollIntoView({ behavior: 'smooth' })}}>Dashboard Preview</a></li>
                         <li><a href="#pricing">Pricing</a></li>
+                        {token && <li><Link href="/dashboard" style={{color: 'var(--accent)'}}>Your Profile</Link></li>}
                     </ul>
-                    <Link href="/login" className="nav-cta">Get Started</Link>
+                    {token ? (
+                        <Link href="/dashboard" className="nav-cta">Go to Dashboard</Link>
+                    ) : (
+                        <Link href="/login" className="nav-cta">Get Started</Link>
+                    )}
                 </div>
             </nav>
 
@@ -164,6 +174,53 @@ export default function LandingPage() {
                         desc="Built-in Pomodoro and deep work blocks. Set it and go." 
                         tag="Free" 
                     />
+                </div>
+            </section>
+
+            {/* DASHBOARD PREVIEW */}
+            <section className="dashboard-preview" id="dashboard-preview">
+                <div className="section-header">
+                    <span className="section-tag">New</span>
+                    <h2>Visualize your progress</h2>
+                    <p>The built-in dashboard tracks your wins, so you don't have to.</p>
+                </div>
+                <div className="dashboard-container">
+                    <div className="dashboard-mock">
+                        <div className="db-header">
+                            <div className="db-tabs">
+                                <span className="db-tab">Focus</span>
+                                <span className="db-tab active">Dashboard</span>
+                            </div>
+                        </div>
+                        <div className="db-body">
+                            <div className="db-stats">
+                                <div className="db-stat">
+                                    <span className="db-val">12</span>
+                                    <span className="db-lbl">Goals Hit</span>
+                                </div>
+                                <div className="db-stat">
+                                    <span className="db-val">3</span>
+                                    <span className="db-lbl">Interrupted</span>
+                                </div>
+                            </div>
+                            <div style={{marginTop: '20px'}}>
+                                <div className="db-chart-title">Today's Distractions</div>
+                                <div className="db-site-item"><span className="db-site-name">reddit.com</span><div className="db-bar"><div className="db-bar-fill" style={{width: '85%'}}></div></div></div>
+                                <div className="db-site-item"><span className="db-site-name">youtube.com</span><div className="db-bar"><div className="db-bar-fill" style={{width: '40%'}}></div></div></div>
+                                <div className="db-site-item"><span className="db-site-name">twitter.com</span><div className="db-bar"><div className="db-bar-fill" style={{width: '25%'}}></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="dashboard-text">
+                        <div className="text-block">
+                            <h4>Daily Trends</h4>
+                            <p>See exactly where your time goes and how many goals you've crushed this week.</p>
+                        </div>
+                        <div className="text-block">
+                            <h4>Interruption Tracking</h4>
+                            <p>Learn your triggers. FocusGuard tells you when and where you get distracted most.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -318,6 +375,27 @@ export default function LandingPage() {
 
                 .features { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
                 .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+                
+                .dashboard-preview { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
+                .dashboard-container { display: flex; gap: 60px; align-items: center; margin-top: 60px; }
+                .dashboard-mock { flex: 1; background: #0b0e17; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.6); }
+                .db-header { border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; align-items: flex-end; height: 60px; background: rgba(0,0,0,0.2); }
+                .db-tabs { display: flex; gap: 24px; }
+                .db-tab { padding: 16px 0; font-size: 0.9rem; color: #666; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; }
+                .db-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+                .db-body { padding: 30px; }
+                .db-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                .db-stat { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+                .db-val { font-size: 2rem; font-weight: 800; color: #fff; }
+                .db-lbl { font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 600; margin-top: 4px; }
+                .db-chart-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #fff; }
+                .db-site-item { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+                .db-site-name { width: 100px; font-size: 0.85rem; color: #aaa; text-align: right; }
+                .db-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; }
+                .db-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #818cf8); border-radius: 99px; }
+                .dashboard-text { flex: 0 0 400px; display: flex; flex-direction: column; gap: 40px; }
+                .text-block h4 { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+                .text-block p { color: var(--text-dim); line-height: 1.6; }
 
                 .pricing { max-width: 1000px; margin: 0 auto; padding: 100px 40px; }
                 .pricing-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 60px; }

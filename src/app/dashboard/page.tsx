@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const API_BASE = 'http://127.0.0.1:3000/api';
+const API_BASE = '/api';
 
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState('overview');
@@ -166,7 +166,7 @@ function OverviewTab({ stats }: any) {
                 <div className="card wide">
                     <h3>Recent Activity</h3>
                     <div className="sessions-list">
-                        {stats?.sessions?.slice(0, 5).map((s: any, i: number) => (
+                        {(stats?.sessions || []).slice(0, 5).map((s: any, i: number) => (
                             <div key={i} className="session-item">
                                 <div className="session-info">
                                     <span className="session-goal">{s.goal_text}</span>
@@ -180,6 +180,9 @@ function OverviewTab({ stats }: any) {
                                 </div>
                             </div>
                         ))}
+                        {(!stats?.sessions || stats.sessions.length === 0) && (
+                            <div className="empty">No recent focus sessions.</div>
+                        )}
                     </div>
                 </div>
                 <div className="card">
